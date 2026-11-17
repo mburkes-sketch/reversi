@@ -97,8 +97,18 @@ def read_input(text):
     Example: the first 8 numbers become board[0]..board[7] (row 1),
              the next 10 become board[8]..board[17] (row 2), and so on.
     """
-    raise NotImplementedError
+    if text is not None:
+        return [int(x) for x in text.split()[:NUM_CELLS]]
+    
+    board = []
+    for line in sys.stdin:
+        for token in line.split():
+            board.append(int(token))
+            if len(board) == NUM_CELLS:
+                return board
+    return board
 
+ROW_STARTS = [sum(ROW_LENGTHS[:r]) for r in range(len(ROW_LENGTHS))]
 
 def cell_index(row, col):
     """Find the board index for an input-style (row, col) position.
@@ -111,7 +121,11 @@ def cell_index(row, col):
     Example: cell_index(1, 0) == 8   (row 1 starts after the 8 cells of row 0)
     Tip: add up ROW_LENGTHS of the rows above, then add col.
     """
-    raise NotImplementedError
+    if row < 0 or row >= len(ROW_LENGTHS):
+        return None
+    if col < 0 or col >= ROW_LENGTHS[row]:
+        return None
+    return ROW_STARTS[row] + col
 
 
 def to_aligned(row, col):
@@ -125,7 +139,7 @@ def to_aligned(row, col):
     work normally.
     Example: to_aligned(0, 0) == (0, 3)
     """
-    raise NotImplementedError
+    return row, col + ROW_OFFSETS[row]
 
 
 def from_aligned(row, aligned_col):
@@ -138,7 +152,10 @@ def from_aligned(row, aligned_col):
     Example: from_aligned(0, 3) == 0  (first cell of row 0)
              from_aligned(0, 0) is None  (row 0 doesn't reach that far left)
     """
-    raise NotImplementedError
+    if row < 0 or row >= len(ROW_LENGTHS):
+        return None
+    col = aligned_col - ROW_OFFSETS[row]
+    return cell_index(row, col)
 
 
 def build_neighbor_table():
@@ -190,8 +207,7 @@ def format_move(i):
              (this is the sample answer from the spec).
     """
     row, column = CELLS[i]
-
-    return row + 1 + " " + column + 1
+    return f"{row + 1} {column + 1}"
 
 
 def other(player):
@@ -450,21 +466,27 @@ def iterative_deepening(board, deadline):
 # ===========================================================================
 
 def main():
-    """Run one turn: read the board, choose a move, print it.
+    """Run one turn: read the board, choose a move, print it."""
+    board = read_input(sys.stdin.read())
+    valid_moves = find_valid_moves(board, ME)
 
-    Steps:
-      1. Record the start time immediately.
-      2. board = read_input(sys.stdin.read())
-      3. deadline = start + TIME_LIMIT - SAFETY_MARGIN
-      4. If we have only one valid move, just play it (no need to search).
-      5. move = iterative_deepening(board, deadline)
-      6. print(format_move(move))
+    if not valid_moves:
+        return
 
-    Never crash and never print nothing. If anything goes wrong, fall back to
-    printing any valid move. (The spec doesn't say what to do with no valid
-    moves. The server probably skips us, but check with the TAs.)
-    """
-    raise NotImplementedError
+    if len(valid_moves) == 1:
+        print(format_move(valid_moves[0]))
+        return
+
+    move = valid_moves[0]
+    try:
+        # Passing None for deadline until timer logic is implemented
+        best = iterative_deepening(board, None)
+        if best in valid_moves:
+            move = best
+    except Exception:
+        pass
+
+    print(format_move(move))
 
 
 if __name__ == "__main__":

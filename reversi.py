@@ -193,7 +193,7 @@ def build_neighbor_table():
 
 
 # Filled in once at startup. Uncomment when build_neighbor_table() works.
-NEIGHBORS = None  # NEIGHBORS = build_neighbor_table()
+NEIGHBORS = build_neighbor_table()
 
 
 def format_move(i):

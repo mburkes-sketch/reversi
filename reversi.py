@@ -156,7 +156,23 @@ def build_neighbor_table():
     How: for each cell, convert it to aligned coords, add the direction step,
     and convert back with from_aligned().
     """
-    raise NotImplementedError
+
+    all_neighbors = []
+
+    for i in CELLS:
+        neighbors = []
+        for d in DIRECTIONS:
+            r, c = CELLS[i]
+            r, c = to_aligned(r,c)
+            dr, dc = DIRECTIONS[d]
+            r,c += r+dr, c+dc
+
+            index = from_aligned(r, c)
+            neighbors.append(CELLS[index] if index is not None else None)
+
+        all_neighbors.append(neighbors)
+
+    return all_neighbors
 
 
 # Filled in once at startup. Uncomment when build_neighbor_table() works.

@@ -20,6 +20,19 @@ SAMPLE = """\
 """
 
 
+SAMPLE2 = """\
+0 0 0 0 0 0 0 0
+0 1 0 0 0 0 0 0 2 0
+0 0 0 0 0 2 1 0 0 0 0 0
+0 1 0 0 0 1 2 2 0 0 0 0 0 0
+1 0 0 0 0 2 1 2 0 0 0 0 2 0
+0 0 0 0 0 1 2 0 0 0 0 0
+0 0 0 0 0 0 0 0 2 0
+0 0 0 0 0 0 0 2
+"""
+
+
+
 def moves_as_text(board, player=reversi.ME):
     return sorted(reversi.format_move(m) for m in reversi.find_valid_moves(board, player))
 
@@ -84,19 +97,24 @@ def test_corner_score():
 
 # tests corner score with a board that has corners claimed
 def test_corner_score2():
-    sample_board = """\
-    1 0 0 0 0 0 0 1
-    0 0 0 0 0 0 0 0 0 0
-    0 0 0 0 0 2 1 0 0 0 0 0
-    1 0 0 0 0 0 2 2 0 0 0 0 0 1
-    1 0 0 0 0 1 2 2 2 0 0 0 0 2
-    0 0 0 0 0 2 2 2 2 0 0 0
-    0 0 0 0 0 0 1 0 0 0
-    2 0 0 0 0 0 0 1
-    """
-
-    board = reversi.read_input(sample_board)
+    board = reversi.read_input(SAMPLE2)
     difference  = reversi.corner_score(board)
 
     # should be zero, no corners have been claimed by either players
-    assert difference == 4 # player corners = 6, opp corners = 2, 6 - 2 = 4
+    assert difference == 0
+
+
+# tests danger squares score with a board that has no corners claimed
+def test_danger_squares_score():
+    board = reversi.read_input(SAMPLE)
+    difference = reversi.danger_squares_score(board)
+
+    assert difference == 0
+
+
+# tests danger squares score with a board that has corners claimed
+def test_danger_squares_score2():
+    board = reversi.read_input(SAMPLE2)
+    difference = reversi.danger_squares_score(board)
+
+    assert difference == -1

@@ -422,7 +422,24 @@ def danger_squares_score(board):
     Output: (our disks next to empty corners) - (their disks next to empty
             corners). Use it with a NEGATIVE weight in evaluate().
     """
-    raise NotImplementedError
+    player_disks_near_corner = 0
+    opp_disks_near_corner = 0
+
+    for c in CORNER_CELLS:
+        if board[c] != EMPTY:
+            continue
+
+        for n in NEIGHBORS[c]:
+            if n is None or n in CORNER_CELLS:
+                continue
+
+            if board[n] == ME:
+                player_disks_near_corner += 1
+
+            if board[n] == OPP:
+                opp_disks_near_corner += 1
+
+    return player_disks_near_corner - opp_disks_near_corner
 
 
 def game_phase(board):

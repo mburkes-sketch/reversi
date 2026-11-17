@@ -332,6 +332,8 @@ CORNER_CELLS = [cell_index(0, 0),  cell_index(0, 7),
                 cell_index(4, 0),  cell_index(4, 13),
                 cell_index(7, 0),  cell_index(7, 7)]
 
+#percentage of board left opened, used to determine game phase, adjust as needed
+ENDGAME_MARK = 0.7
 
 def utility(board):
     """Exact score of a FINISHED game. Only call this when game_over() is True.
@@ -340,8 +342,16 @@ def utility(board):
     Optional: add the disk difference (e.g. WIN_SCORE + diff) so the agent
     prefers winning by more.
     """
-    raise NotImplementedError
+    player_discs = board.count(ME)
+    opp_discs = board.count(OPP)
+    disc_diff = player_discs - opp_discs
 
+    if player_discs > opp_discs:
+        return disc_diff + WIN_SCORE #we have more discs
+    elif player_discs < opp_discs:
+        return disc_diff - WIN_SCORE #opp has more discs
+    else:
+        return 0 #tie
 
 def evaluate(board):
     """Estimate how good an UNFINISHED board is for us.
@@ -357,7 +367,27 @@ def evaluate(board):
     Good idea: change the weights with game_phase(). Early on, mobility and
     corners matter most. Near the end, disk count matters most.
     """
-    raise NotImplementedError
+    #Adjust weights as needed
+
+    # early game weights
+    corner_weight = 25
+    mobility_weight = 5
+    disc_difference_weight = 1
+    danger_squares_weight = -10
+
+    # endgame prioritizes disk count
+    if game_phase(board) > ENDGAME_MARK:
+        disc_difference_weight = 10 # disk count becomes important
+        mobility_weight = 2
+
+    # score calculation
+    corner = corner_weight * corner_score(board)
+    mob = mobility_weight * mobility(board)
+    discs = disc_difference_weight * disc_difference(board)
+    danger_squares = danger_squares_weight * danger_squares_score(board)
+    total_score = corner + mob + discs + danger_squares
+
+    return total_score
 
 
 def disc_difference(board):
@@ -367,16 +397,7 @@ def disc_difference(board):
     Note: this matters most near the end. Early on, having FEWER disks is often
     better because it gives the opponent fewer moves.
     """
-    player_disc = 0
-    opp_disc = 0
-    for i in range(NUM_CELLS):
-        if board[i] == ME:
-            player_disc+=1
-
-        if board[i] == OPP:
-            opp_disc+=1
-
-    return player_disc - opp_disc
+    return board.count(ME) - board.count(OPP)
 
 
 def mobility(board):
@@ -449,7 +470,7 @@ def game_phase(board):
             (no empty cells). For example: 1 - (empty cells / NUM_CELLS).
     Used by evaluate() to change weights as the game goes on.
     """
-    raise NotImplementedError
+    return 1 - (board.count(EMPTY) / NUM_CELLS)
 
 
 # ===========================================================================

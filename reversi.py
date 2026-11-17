@@ -173,12 +173,14 @@ def format_move(i):
     Example: if CELLS[i] == (6, 5), return "7 6"
              (this is the sample answer from the spec).
     """
-    raise NotImplementedError
+    row, column = CELLS[i]
+
+    return row + 1 + " " + column + 1
 
 
 def other(player):
     """Return the other player: other(ME) == OPP, other(OPP) == ME."""
-    raise NotImplementedError
+    return OPP if player == ME else ME
 
 
 # ===========================================================================

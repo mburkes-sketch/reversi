@@ -176,16 +176,12 @@ def build_neighbor_table():
 
     all_neighbors = []
 
-    for i in CELLS:
+    for i in range(NUM_CELLS):
         neighbors = []
-        for d in DIRECTIONS:
-            r, c = CELLS[i]
-            r, c = to_aligned(r,c)
-            dr, dc = DIRECTIONS[d]
-            r,c += r+dr, c+dc
-
-            index = from_aligned(r, c)
-            neighbors.append(CELLS[index] if index is not None else None)
+        for dr, dc in DIRECTIONS:
+            r, c = to_aligned(*CELLS[i])
+            index = from_aligned(r + dr, c + dc)
+            neighbors.append(index)
 
         all_neighbors.append(neighbors)
 
@@ -240,7 +236,24 @@ def flips_for(board, i, player):
 
     Also: if cell i isn't EMPTY, the move is illegal, so return [].
     """
-    raise NotImplementedError
+    # invalid move: can't play on a taken cell
+    if board[i] != EMPTY:
+        return []
+
+    opponent = other(player)
+    to_be_flipped = []
+
+    for d in range(8): # look in each direction
+        maybes = []    # possible cells to flip in current direction
+        j = NEIGHBORS[i][d]
+        while j is not None and board[j] == opponent:
+            maybes.append(j)
+            j = NEIGHBORS[j][d]
+
+        if j is not None and board[j] == player and maybes:
+            to_be_flipped.extend(maybes)
+
+    return to_be_flipped
 
 
 def find_valid_moves(board, player=ME):
@@ -253,7 +266,21 @@ def find_valid_moves(board, player=ME):
     Example: on the spec's sample board, our valid moves (formatted) are
              3 5, 4 6, 4 9, 5 10, 5 11, 7 6.
     """
-    raise NotImplementedError
+    valid_moves = [] # stores all the valid moves player can choose
+    for i in range(NUM_CELLS):
+        # if cell is occupied, invalid move
+        if board[i] != EMPTY:
+            continue
+
+        # stores cells that will be flipped
+        cell_flips = flips_for(board, i, player)
+        # if no cells are flipped, invalid move
+        if not cell_flips:
+            continue
+
+        valid_moves.append(i)
+
+    return valid_moves
 
 
 def apply_move(board, i, player):
@@ -268,7 +295,18 @@ def apply_move(board, i, player):
     Example: on the sample board, playing "7 6" flips 4 opponent disks, so we
              gain 5 disks (4 flipped + 1 placed) and they lose 4.
     """
-    raise NotImplementedError
+    new_board = board[:] # copy old board
+    new_board[i] = player # flip choosen cell to player
+
+    # find all cells that flipped when choosing this cell
+    flips = flips_for(board, i, player)
+
+    # set all flipped cells to player
+    for j in flips:
+        new_board[j] = player
+
+    return new_board
+
 
 
 def game_over(board):
@@ -279,7 +317,10 @@ def game_over(board):
 
     Note: one player having no moves is NOT game over. They just pass.
     """
-    raise NotImplementedError
+    player_moves = find_valid_moves(board, ME)
+    opp_moves = find_valid_moves(board, OPP)
+
+    return not player_moves and not opp_moves
 
 
 # ===========================================================================

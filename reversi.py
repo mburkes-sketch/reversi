@@ -71,7 +71,6 @@ WIN_SCORE = 10_000     # score for a won game. Must be bigger than anything
                        # evaluate() can return, so a real win always beats a
                        # position that only "looks good".
 
-
 class SearchTimeout(Exception):
     """Thrown from deep inside the search when we run out of time.
 
@@ -308,7 +307,6 @@ def apply_move(board, i, player):
     return new_board
 
 
-
 def game_over(board):
     """Check whether the game has ended.
 
@@ -327,6 +325,13 @@ def game_over(board):
 # SCORING
 # All scores are from OUR point of view: bigger = better for ME.
 # ===========================================================================
+
+
+CORNER_CELLS = [cell_index(0, 0),  cell_index(0, 7),
+                cell_index(3, 0),  cell_index(3, 13),
+                cell_index(4, 0),  cell_index(4, 13),
+                cell_index(7, 0),  cell_index(7, 7)]
+
 
 def utility(board):
     """Exact score of a FINISHED game. Only call this when game_over() is True.
@@ -362,7 +367,16 @@ def disc_difference(board):
     Note: this matters most near the end. Early on, having FEWER disks is often
     better because it gives the opponent fewer moves.
     """
-    raise NotImplementedError
+    player_disc = 0
+    opp_disc = 0
+    for i in range(NUM_CELLS):
+        if board[i] == ME:
+            player_disc+=1
+
+        if board[i] == OPP:
+            opp_disc+=1
+
+    return player_disc - opp_disc
 
 
 def mobility(board):
@@ -373,22 +387,10 @@ def mobility(board):
     Note: this calls find_valid_moves twice, so it's expensive. Keep an eye on
     speed.
     """
-    raise NotImplementedError
+    num_player_valid_moves = len(find_valid_moves(board, ME))
+    num_opp_valid_moves = len(find_valid_moves(board, OPP))
 
-
-def corner_cells():
-    """List the "corner" cells of this board shape.
-
-    Output: a list of board indices.
-
-    A corner is a cell that can never be flipped once taken. A disk can only be
-    flipped if it sits between two cells on some line, so a corner is a cell
-    that has no "both sides" on any line. This board isn't a rectangle, so
-    there may be more than 4. Look at the board picture (or use NEIGHBORS: a
-    cell is a corner if, for every direction, it's missing the neighbor on at
-    least one side). Compute this once and cache it.
-    """
-    raise NotImplementedError
+    return num_player_valid_moves - num_opp_valid_moves
 
 
 def corner_score(board):
@@ -397,7 +399,17 @@ def corner_score(board):
     Output: (corners that are ME) - (corners that are OPP).
     Corners are very valuable because they can never be flipped back.
     """
-    raise NotImplementedError
+    player_corner = 0
+    opp_corner = 0
+
+    for i in CORNER_CELLS:
+        if board[i] == ME:
+            player_corner+=1
+
+        if board[i] == OPP:
+            opp_corner+=1
+
+    return player_corner - opp_corner
 
 
 def danger_squares_score(board):

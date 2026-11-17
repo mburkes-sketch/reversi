@@ -55,3 +55,48 @@ def test_program_outputs_legal_move_in_time():
                          capture_output=True, text=True, timeout=5).stdout.strip()
     assert time.time() - start < reversi.TIME_LIMIT
     assert out in moves_as_text(reversi.read_input(SAMPLE))
+
+# -------------------------------------------------------------
+# TESTING SCORING FUNCTIONS
+# -------------------------------------------------------------
+
+def test_disc_difference_score():
+    board = reversi.read_input(SAMPLE)
+    difference = reversi.disc_difference(board)
+
+    assert difference == -7 # player disc = 3, opp disc = 10, 3 - 10 = -7
+
+def test_mobility_score():
+    board = reversi.read_input(SAMPLE)
+    difference = reversi.mobility(board)
+
+    assert difference == -3
+
+
+# tests corner score with a board that has no corners claimed
+def test_corner_score():
+    board = reversi.read_input(SAMPLE)
+    difference  = reversi.corner_score(board)
+
+    # should be zero, no corners have been claimed by either players
+    assert difference == 0
+
+
+# tests corner score with a board that has corners claimed
+def test_corner_score2():
+    sample_board = """\
+    1 0 0 0 0 0 0 1
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 2 1 0 0 0 0 0
+    1 0 0 0 0 0 2 2 0 0 0 0 0 1
+    1 0 0 0 0 1 2 2 2 0 0 0 0 2
+    0 0 0 0 0 2 2 2 2 0 0 0
+    0 0 0 0 0 0 1 0 0 0
+    2 0 0 0 0 0 0 1
+    """
+
+    board = reversi.read_input(sample_board)
+    difference  = reversi.corner_score(board)
+
+    # should be zero, no corners have been claimed by either players
+    assert difference == 4 # player corners = 6, opp corners = 2, 6 - 2 = 4

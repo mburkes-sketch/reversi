@@ -489,8 +489,35 @@ def rank_moves(board, moves, player):
     Cheap ideas: corners first, cells next to empty corners last, or sort by
     a quick evaluate() of the board after the move.
     """
-    raise NotImplementedError
+    corners = []
+    corner_neighbors = []
+    normal_moves = []
+    ranked = []
+    for move in moves:
+        # check if move is a corner cell
+        if move in CORNER_CELLS:
+            corners.append(move)
+            continue
 
+        # if the move's neighbor is a corner cell, then it is a neighbor of a corner
+        neighbors = NEIGHBORS[move]
+        near_empty_corner = False
+        for n in neighbors:
+            if n is not None and n in CORNER_CELLS and board[n] == EMPTY:
+                near_empty_corner = True
+                break
+
+        if near_empty_corner:
+            corner_neighbors.append(move)
+        else:
+            normal_moves.append(move)
+
+    # rank moves priorty
+    # 1. corner cells
+    # 2. normal moves
+    # 3. corner
+    ranked = corners + normal_moves + corner_neighbors
+    return ranked
 
 def alphabeta(board, depth, alpha, beta, player, deadline):
     """Score `board` by looking `depth` moves ahead.

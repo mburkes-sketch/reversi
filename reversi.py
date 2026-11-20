@@ -1,6 +1,8 @@
 """
 CMSC474 Project 2 - Reversi (88-cell variant)
+Authors: Andrew Chen, Arnav Doshi, Max Burkes
 
+Project Description:
 Reads the board from stdin and prints our move as "row col".
 Uses minimax with alpha-beta pruning and iterative deepening.
 """
@@ -224,15 +226,15 @@ def evaluate(board):
     #Adjust weights as needed
 
     # early game weights
-    corner_weight = 25
+    corner_weight = 100
     mobility_weight = 5
-    disc_difference_weight = 1
-    danger_squares_weight = -10
+    disc_difference_weight = -2
+    danger_squares_weight = -50
 
     # endgame prioritizes disk count
     if game_phase(board) > ENDGAME_MARK:
-        disc_difference_weight = 10 # disk count becomes important
-        mobility_weight = 2
+        disc_difference_weight = 3 # disk count becomes important
+        mobility_weight = 10
 
     # score calculation
     corner = corner_weight * corner_score(board)

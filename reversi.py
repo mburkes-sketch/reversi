@@ -542,7 +542,42 @@ def alphabeta(board, depth, alpha, beta, player, deadline):
       6. If alpha >= beta at any point, stop looping (prune). The other player
          would never let the game reach this position.
     """
-    raise NotImplementedError
+    if game_over(board):
+        return utility(board)
+    if depth == 0:
+        return evaluate(board)
+    
+    valid_moves = find_valid_moves(board, player)
+
+    # Skip this turn if no valid moves
+    if not valid_moves:
+        return alphabeta(board, depth - 1, alpha, beta, other(player), deadline)
+
+    ranked_moves = rank_moves(board, valid_moves, player)
+
+    if player == ME:
+        max_score = float('-inf')
+        for move in ranked_moves:
+            score = alphabeta(apply_move(board, move, player), depth - 1, alpha, beta, other(player), deadline)
+            if score > max_score:
+                max_score = score
+            alpha = max(alpha, max_score)
+            if alpha >= beta:
+                break
+        return max_score
+
+    else:  # player == OPP
+        min_score = float('inf')
+        for move in ranked_moves:
+            score = alphabeta(apply_move(board, move, player), depth - 1, alpha, beta, other(player), deadline)
+            if score < min_score:
+                min_score = score
+            beta = min(beta, min_score)
+            if beta <= alpha:
+                break
+        return min_score
+            
+            
 
 
 def search_root(board, depth, deadline):

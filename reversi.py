@@ -343,6 +343,8 @@ def alphabeta(board, depth, alpha, beta, player, deadline):
       6. If alpha >= beta at any point, stop looping (prune). The other player
          would never let the game reach this position.
     """
+    if time.time() > deadline:
+        raise SearchTimeout
     if game_over(board):
         return utility(board)
     if depth == 0:
@@ -377,8 +379,6 @@ def alphabeta(board, depth, alpha, beta, player, deadline):
             if beta <= alpha:
                 break
         return min_score
-            
-            
 
 def search_root(board, depth, deadline):
     """Return (best_move, score) for ME at a fixed search depth."""

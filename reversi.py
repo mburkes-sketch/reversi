@@ -135,6 +135,23 @@ def flips_for(board, i, player):
     return to_be_flipped
 
 
+def is_legal(board, i, player):
+    """Return True if player can play at i (stops at the first direction that flips)."""
+    if board[i] != EMPTY:
+        return False
+    opponent = OPP if player == ME else ME
+    for d in range(8):
+        j = NEIGHBORS[i][d]
+        if j is None or board[j] != opponent:
+            continue
+        j = NEIGHBORS[j][d]
+        while j is not None and board[j] == opponent:
+            j = NEIGHBORS[j][d]
+        if j is not None and board[j] == player:
+            return True
+    return False
+
+
 def find_valid_moves(board, player=ME):
     """Return all cells where player has a legal move."""
     valid_moves = [] # stores all the valid moves player can choose
@@ -143,10 +160,8 @@ def find_valid_moves(board, player=ME):
         if board[i] != EMPTY:
             continue
 
-        # stores cells that will be flipped
-        cell_flips = flips_for(board, i, player)
-        # if no cells are flipped, invalid move
-        if not cell_flips:
+        # if no cells would be flipped, invalid move
+        if not is_legal(board, i, player):
             continue
 
         valid_moves.append(i)
@@ -324,16 +339,18 @@ def alphabeta(board, depth, alpha, beta, player, deadline):
     """Minimax value of board with alpha-beta pruning (ME maximizes, OPP minimizes)."""
     if time.time() > deadline:
         raise SearchTimeout
-    if game_over(board):
-        return utility(board)
-    if depth == 0:
-        return evaluate(board)
-    
     valid_moves = find_valid_moves(board, player)
 
     # Skip this turn if no valid moves
     if not valid_moves:
+        if not find_valid_moves(board, other(player)):
+            return utility(board)  # neither player can move: game over
+        if depth == 0:
+            return evaluate(board)
         return alphabeta(board, depth - 1, alpha, beta, other(player), deadline)
+
+    if depth == 0:
+        return evaluate(board)
 
     ranked_moves = rank_moves(board, valid_moves, player)
 

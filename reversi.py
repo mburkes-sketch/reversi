@@ -321,28 +321,7 @@ def rank_moves(board, moves, player):
     return ranked
 
 def alphabeta(board, depth, alpha, beta, player, deadline):
-    """Score `board` by looking `depth` moves ahead.
-
-    Input:
-        board    - position to score
-        depth    - how many more moves to look ahead (stop at 0)
-        alpha    - best score ME is already guaranteed elsewhere in the tree
-        beta     - best (lowest) score OPP is already guaranteed elsewhere
-        player   - whose turn it is on this board (ME maximizes, OPP minimizes)
-        deadline - time.time() value we must stop by
-    Output: a number, the minimax value of this board for ME.
-
-    Steps:
-      1. If time.time() > deadline: raise SearchTimeout.
-      2. If game_over(board): return utility(board).
-      3. If depth == 0: return evaluate(board).
-      4. Get valid moves for `player`. If there are none, the player passes:
-         return alphabeta(same board, depth - 1, alpha, beta, other(player), ...).
-      5. If player is ME: try each move, keep the MAX score, update alpha.
-         If player is OPP: try each move, keep the MIN score, update beta.
-      6. If alpha >= beta at any point, stop looping (prune). The other player
-         would never let the game reach this position.
-    """
+    """Minimax value of board with alpha-beta pruning (ME maximizes, OPP minimizes)."""
     if time.time() > deadline:
         raise SearchTimeout
     if game_over(board):
@@ -380,14 +359,39 @@ def alphabeta(board, depth, alpha, beta, player, deadline):
                 break
         return min_score
 
+
 def search_root(board, depth, deadline):
     """Return (best_move, score) for ME at a fixed search depth."""
-    raise NotImplementedError
+    alpha, beta = float("-inf"), float("inf")
+    best_move = None
+    best_score = float("-inf")
+
+    # finds all the best possible moves on current board for player
+    moves = rank_moves(board, find_valid_moves(board, ME), ME)
+    # searches tree for the best move out of all the best possible moves
+    for move in moves:
+        child = apply_move(board, move, ME)
+        score = alphabeta(child, depth - 1, alpha, beta, OPP, deadline)
+        if score > best_score:
+            best_score = score
+            best_move = move
+        alpha = max(alpha, best_score)
+
+    return best_move, best_score
 
 
 def iterative_deepening(board, deadline):
     """Search deeper each round until time runs out; return the best move found."""
-    raise NotImplementedError
+    moves = find_valid_moves(board, ME)
+    best_move = rank_moves(board, moves, ME)[0]
+    depth = 1
+    while depth <= board.count(EMPTY):
+        try:
+            best_move, _ = search_root(board, depth, deadline)
+        except SearchTimeout:
+            break
+        depth += 1
+    return best_move
 
 # ===========================================================================
 # ENTRY POINT
